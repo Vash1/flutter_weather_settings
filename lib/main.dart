@@ -24,13 +24,11 @@ class App extends StatelessWidget {
             ),
           ],
           child: HomePage(),
-          
         ),
       )
     );
   }
 }
-
 
 class HomePage extends StatelessWidget {
   final textController = TextEditingController();
@@ -59,6 +57,14 @@ class HomePage extends StatelessWidget {
               },
             ),
           ),
+          BlocBuilder( //the state here is broken, or it is a duplicate instance of it
+                        // always shows the initial value
+            bloc: BlocProvider.of<SettingsBloc>(context),
+            builder: (_, SettingsState state) {
+              return Center(child: Text(state.temperatureUnits.toString()));
+            },
+          ),
+
         ],
       )
     );
@@ -87,14 +93,19 @@ class NewWidget extends StatelessWidget  {
         title: Text("Settings"),
       ),
       body: BlocBuilder<SettingsBloc, SettingsState>(
-        builder: (_, SettingsState state) {
-          return Center(
-            child: Switch(
-              value: state.temperatureUnits == TemperatureUnits.celsius,
-              onChanged: (_) =>
-                //button is always true and can't be toggled
-                BlocProvider.of<SettingsBloc>(context).add(TemperatureUnitsToggled()),
-            )
+        builder: (context, SettingsState state) {
+          return Column(
+            children: <Widget>[
+              Center(
+                child: Switch(
+                  value: state.temperatureUnits == TemperatureUnits.celsius,
+                  onChanged: (_) =>
+                    //this Switch will always be in default state (active) after navigating to this page
+                    BlocProvider.of<SettingsBloc>(context).add(TemperatureUnitsToggled()),
+                )
+              ),
+              Center(child: Text(BlocProvider.of<SettingsBloc>(context).state.temperatureUnits.toString())),
+            ]
           );
         }
       ),

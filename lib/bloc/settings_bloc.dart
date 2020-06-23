@@ -11,13 +11,14 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
   @override
   Stream<SettingsState> mapEventToState(SettingsEvent event) async* {
     if (event is TemperatureUnitsToggled) {
-      print("A toggle from" + state.temperatureUnits.toString());
-      yield SettingsState(
+      SettingsState settingsState = SettingsState(
         temperatureUnits: 
             state.temperatureUnits == TemperatureUnits.celsius
                 ? TemperatureUnits.fahrenheit
-                : TemperatureUnits.celsius,
-      );
+                : TemperatureUnits.celsius);
+      print("A toggle from" + state.temperatureUnits.toString());
+      print(settingsState.temperatureUnits);
+      yield settingsState;
     }
   }
 }
