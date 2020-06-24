@@ -16,57 +16,53 @@ class App extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       home: Scaffold(
-        //I do use MultiBlocProvider with 2 more providers responsible for API calls
         body: MultiBlocProvider(
           providers: [
-            BlocProvider<SettingsBloc>(
-              create: (context) => SettingsBloc(),
-            ),
+            BlocProvider<SettingsBloc>(create: (_) => SettingsBloc()),
           ],
           child: HomePage(),
         ),
-      )
+      ),
     );
   }
 }
 
 class HomePage extends StatelessWidget {
-  final textController = TextEditingController();
-
-  static Route<dynamic> route() => MaterialPageRoute(
-        builder: (context) => HomePage(),
-    );
+  static Route<dynamic> route() =>
+      MaterialPageRoute(builder: (_) => HomePage());
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Home"),
-      ),
-
+      appBar: AppBar(title: Text("Home")),
       body: Column(
         children: <Widget>[
           Center(
-            child: RaisedButton (
-              child: Text('Settings Page Button',style: TextStyle(fontSize: 20)),
-              onPressed:() {
+            child: RaisedButton(
+              child: Text(
+                'Settings Page Button',
+                style: TextStyle(fontSize: 20),
+              ),
+              onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => SettingsPage()),
+                  MaterialPageRoute(
+                    builder: (_) => BlocProvider.value(
+                      value: context.bloc<SettingsBloc>(),
+                      child: SettingsPage(),
+                    ),
+                  ),
                 );
               },
             ),
           ),
-          BlocBuilder( //the state here is broken, or it is a duplicate instance of it
-                        // always shows the initial value
-            bloc: BlocProvider.of<SettingsBloc>(context),
-            builder: (_, SettingsState state) {
+          BlocBuilder<SettingsBloc, SettingsState>(
+            builder: (_, state) {
               return Center(child: Text(state.temperatureUnits.toString()));
             },
           ),
-
         ],
-      )
+      ),
     );
   }
 }
@@ -74,40 +70,37 @@ class HomePage extends StatelessWidget {
 class SettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return BlocProvider<SettingsBloc>(
-        create: (context) => SettingsBloc(),
-        child: NewWidget(),
-        //Using a new Widget to get a new context 
-        //related to: https://github.com/felangel/bloc/issues/763
-        //solution: Either wrap in a new widget or wrap in Builder()
-      );
+    return NewWidget();
   }
 }
 
-
-class NewWidget extends StatelessWidget  {
-  @override 
+class NewWidget extends StatelessWidget {
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Settings"),
-      ),
+      appBar: AppBar(title: Text("Settings")),
       body: BlocBuilder<SettingsBloc, SettingsState>(
-        builder: (context, SettingsState state) {
+        builder: (context, state) {
           return Column(
             children: <Widget>[
               Center(
                 child: Switch(
                   value: state.temperatureUnits == TemperatureUnits.celsius,
-                  onChanged: (_) =>
-                    //this Switch will always be in default state (active) after navigating to this page
-                    BlocProvider.of<SettingsBloc>(context).add(TemperatureUnitsToggled()),
-                )
+                  onChanged: (_) => context
+                      .bloc<SettingsBloc>()
+                      .add(TemperatureUnitsToggled()),
+                ),
               ),
-              Center(child: Text(BlocProvider.of<SettingsBloc>(context).state.temperatureUnits.toString())),
-            ]
+              Center(
+                child: Text(context
+                    .bloc<SettingsBloc>()
+                    .state
+                    .temperatureUnits
+                    .toString()),
+              ),
+            ],
           );
-        }
+        },
       ),
     );
   }
